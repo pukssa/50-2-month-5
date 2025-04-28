@@ -1,5 +1,5 @@
 """
-URL configuration for shop_api project.
+URL configuration for myproject project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -16,15 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from products import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/product/', views.product_list_api_view),
-    path('api/v1/product/<int:id>/', views.product_detail_api_view),
-    path('api/v1/categories/', views.category_list_api_view),
-    path('api/v1/categories/<int:id>/', views.category_detail_api_view),
-    path('api/v1/review/', views.review_list_api_view),
-    path('api/v1/review/<int:id>/', views.review_detail_api_view),
-    path('api/v1/products/reviews/', views.product_reviews_with_rating),
 ]
