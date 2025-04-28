@@ -1,5 +1,29 @@
 from rest_framework import serializers
 from .models import product, category, review
+from rest_framework import serializers
+from .models import User, UserConfirmation
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password')
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            is_active=False
+        )
+        UserConfirmation.objects.create(user=user)
+        #Здесь можно добавить отправку кода на emailили sms
+        return user
+
+class ConfirmationSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=6)
+
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:

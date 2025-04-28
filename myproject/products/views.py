@@ -5,8 +5,54 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import product, category, review
 from .serializer import ProductSerializer, ProductDetailSerializer, CategoryDetailSerializer, CategorySerializer,ReviewSerializer,ReviewDetailSerializer
+from django.contrib.auth import authenticate
+from .models import User, UserConfirmation
+from .serializer import (
+    UserRegistrationSerializer,
+    ConfirmationSerializer,)
 
+@api_view(['POST'])
+def register_user(request):
+    serializer = UserRegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"detail": "Код подтверждения отправлен."},
+            status=status.HTTP_201_CREATED
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+def confirm_user(request):
+    serializer = ConfirmationSerializer(data=request.data)
+    if serializer.is_valid():
+        code = serializer.validated_data['code']
+        try:
+            confirmation = UserConfirmation.objects.get(code=code)
+            user = confirmation.user
+            user.is_active = True
+            user.save()
+            confirmation.delete()  #Код больше не нужен
+            return Response({"detail": "Пользователь подтвержден."})
+        except UserConfirmation.DoesNotExist:
+            return Response(
+                {"error": "Неверный код."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def login_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(username=username, password=password)
+    if user and user.is_active:
+
+        return Response({"detail": "Успешный вход."})
+    return Response(
+        {"error": "Неверные данные или пользователь не подтвержден."},
+        status=status.HTTP_401_UNAUTHORIZED
+    )
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def product_detail_api_view(request, id):
