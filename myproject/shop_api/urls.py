@@ -1,109 +1,39 @@
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from .models import product, category, review
-from .serializer import ProductSerializer, ProductDetailSerializer, CategoryDetailSerializer, CategorySerializer,ReviewSerializer,ReviewDetailSerializer
+"""
+URL configuration for shop_api project.
 
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/5.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import path
+from products import views
 
+urlpatterns = [
+    # User Auth Endpoints
+    path('register/', views.RegisterUserView.as_view()),
+    path('confirm/', views.ConfirmUserView.as_view()),
+    path('login/', views.LoginUserView.as_view()),
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def product_detail_api_view(request, id):
-    obj = get_object_or_404(product, id=id)
-    if request.method == 'GET':
-        data = ProductSerializer(obj).data
-        return Response(data)
-    elif request.method == 'PUT':
-        serializer = ProductSerializer(obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    # Product Endpoints
+    path('products/', views.ProductListView.as_view()),
+    path('products/<int:pk>/', views.ProductDetailView.as_view()),
+    path('products/reviews/', views.ProductReviewsWithRatingView.as_view()),
 
+    # Category Endpoints
+    path('categories/', views.CategoryListView.as_view()),
+    path('categories/<int:pk>/', views.CategoryDetailView.as_view()),
 
-
-
-@api_view(['GET', 'POST'])
-def product_list_api_view(request):
-    if request.method == 'GET':
-        products = product.objects.all()
-        data = ProductSerializer(products, many=True).data
-        return Response(data=data, status=status.HTTP_200_OK)
-    elif request.method == 'POST':
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'POST'])
-def category_list_api_view(request):
-    if request.method == 'GET':
-        categories = category.objects.all()
-        data = CategorySerializer(categories, many=True).data
-        return Response(data=data, status=status.HTTP_200_OK)
-    elif request.method == 'POST':
-        serializer = CategorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'PUT', 'DELETE'])
-def category_detail_api_view(request, id):
-    obj = get_object_or_404(category, id=id)
-    if request.method == 'GET':
-        data = CategorySerializer(obj).data
-        return Response(data)
-    elif request.method == 'PUT':
-        serializer = CategorySerializer(obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-@api_view(['GET', 'POST'])
-def review_list_api_view(request):
-    if request.method == 'GET':
-        reviews = review.objects.all()
-        data = ReviewSerializer(reviews, many=True).data
-        return Response(data=data, status=status.HTTP_200_OK)
-    elif request.method == 'POST':
-        serializer = ReviewSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET', 'PUT', 'DELETE'])
-def review_detail_api_view(request, id):
-    obj = get_object_or_404(review, id=id)
-    if request.method == 'GET':
-        data = ReviewSerializer(obj).data
-        return Response(data)
-    elif request.method == 'PUT':
-        serializer = ReviewSerializer(obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-@api_view(['GET'])
-def product_reviews_with_rating(request):
-    products = product.objects.all()
-    serializer = ProductSerializer(products, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    # Review Endpoints
+    path('reviews/', views.ReviewListView.as_view()),
+    path('reviews/<int:pk>/', views.ReviewDetailView.as_view()),
+]
